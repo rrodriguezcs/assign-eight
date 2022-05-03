@@ -17,5 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
-resolve(\Illuminate\Routing\UrlGenerator::class)->forceScheme('https');
+require __DIR__.'/auth.php';
