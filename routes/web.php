@@ -1,17 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,5 +10,49 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
+
+Route::get('/authorization', function (Request $request) {  //Get authorization
+    $request->session()->put('state', $state = Str::random(40));
+ 
+    $query = http_build_query([
+        'client_id' => '3',
+        'redirect_uri' => 'http://127.0.0.1:8000/callback',
+        'response_type' => 'code',
+        'scope' => '',
+        'state' => $state,
+    ]);
+
+    return redirect('http://127.0.0.1:8000/oauth/authorize?'.$query);
+})->name('authorization');
+
+
+
+Route::get('/callback', function (Request $request) {   //Get Token after authorization
+    $state = $request->session()->pull('state');
+    
+    if(strlen($state) > 0 && $state === $request->state) {
+ 
+        $response = Http::asForm()->post('http://127.0.0.1:8000/oauth/token', [
+            'grant_type' => 'authorization_code',
+            'client_id' => '',
+            'client_secret' => 'KO0txhnlkpV7wNNf746w120kpqcGMYfkxJgoxgz',
+            'redirect_uri' => 'http://127.0.0.1:8000/callback',
+            'code' => $request->code,
+        ]);
+        
+        $accessToken = $response->json()['access_token'];
+    
+        //Use the token to request data
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer '.$accessToken,
+        ])->get('http://127.0.0.1:8000/api/users');
+        
+        return $response->json();
+        
+    } else {
+        return redirect()->route('authorization');
+    }
+});
 
 require __DIR__.'/auth.php';
