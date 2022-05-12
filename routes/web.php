@@ -34,8 +34,8 @@ Route::get('/callback', function (Request $request) {   //Get Token after author
  
         $response = Http::asForm()->post('http://127.0.0.1:8000/oauth/token', [
             'grant_type' => 'authorization_code',
-            'client_id' => '',
-            'client_secret' => 'KO0txhnlkpV7wNNf746w120kpqcGMYfkxJgoxgz',
+            'client_id' => '3',
+            'client_secret' => 'nuKLcJvo2JcZ4zIn64Y4g90wA0LgFEAV1dOZF9ZH',
             'redirect_uri' => 'http://127.0.0.1:8000/callback',
             'code' => $request->code,
         ]);
@@ -46,7 +46,7 @@ Route::get('/callback', function (Request $request) {   //Get Token after author
         $response = Http::withHeaders([
             'Accept' => 'application/json',
             'Authorization' => 'Bearer '.$accessToken,
-        ])->get('http://127.0.0.1:8000/api/users');
+        ])->get('http://127.0.0.1:8001/api/users');
         
         return $response->json();
         
